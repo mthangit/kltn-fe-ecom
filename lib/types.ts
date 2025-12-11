@@ -258,12 +258,12 @@ export interface ChatMessage {
   content: string;
   messageType?: ChatMessageType;
   timestamp: string;
-  // For product messages
-  product?: Product;
-  products?: Product[];
-  // For order messages
-  order?: Order;
-  orders?: Order[];
+  // For product messages (from chatbot API)
+  products?: ChatbotProduct[];
+  // For order messages (from chatbot API)
+  orders?: ChatbotOrder[];
+  // For profile messages (from chatbot API)
+  profile?: ChatbotProfile | null;
   // For action messages
   action?: {
     type: string;
@@ -274,15 +274,46 @@ export interface ChatMessage {
 
 export interface ChatSession {
   session_id: string;
-  user_id?: number;
-  created_at: string;
+}
+
+// Chatbot Product (from API - may have different fields)
+export interface ChatbotProduct {
+  product_id?: string | null;
+  product_code?: string | null;
+  product_name: string;
+  price: number;
+  price_text?: string | null;
+  unit?: string | null;
+  product_url?: string | null;
+  image_url?: string | null;
+  discount_percent?: number | null;
+  score?: number | null;
+}
+
+// Chatbot Order (from API - simplified)
+export interface ChatbotOrder {
+  order_number: string;
+  status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled';
+  total_amount: number;
+}
+
+// Chatbot Profile (from API)
+export interface ChatbotProfile {
+  full_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+}
+
+// Chatbot Context
+export interface ChatbotContext {
+  products?: ChatbotProduct[];
+  orders?: ChatbotOrder[];
+  profile?: ChatbotProfile | null;
 }
 
 export interface ChatResponse {
-  response: string;
+  reply: string;
   session_id: string;
-  products?: Product[];
-  orders?: Order[];
-  suggestions?: string[];
+  context: ChatbotContext;
 }
 

@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { X, Bot } from 'lucide-react';
-import { ChatMessage, Product, Order } from '@/lib/types';
-import { chatbotAPI, getChatSession, setChatSession, saveChatMessages, loadChatMessages } from '@/lib/api/chatbot';
+import { X, Bot, RotateCcw } from 'lucide-react';
+import { ChatMessage, ChatbotProduct, ChatbotOrder, ChatbotProfile } from '@/lib/types';
+import { chatbotAPI, getChatSession, setChatSession, saveChatMessages, loadChatMessages, clearChatSession } from '@/lib/api/chatbot';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useCartStore } from '@/lib/store/cart-store';
 import { useToast } from '@/components/ui/Toast';
@@ -122,34 +122,36 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
       const botMessage: ChatMessage = {
         id: `bot-${Date.now()}`,
         type: 'bot',
-        content: response.response || 'Xin lỗi, tôi không hiểu câu hỏi của bạn.',
+        content: response.reply || 'Xin lỗi, tôi không hiểu câu hỏi của bạn.',
         timestamp: new Date().toISOString(),
       };
 
+      // Handle context from API
+      const context = response.context || {};
+
       // Add products if available
-      if (response.products && response.products.length > 0) {
-        botMessage.products = response.products;
+      if (context.products && context.products.length > 0) {
+        botMessage.products = context.products;
         botMessage.messageType = 'product';
-        // If only products, don't show text content (or show minimal)
-        if (response.products.length > 0 && !response.response) {
-          botMessage.content = `Tôi tìm thấy ${response.products.length} sản phẩm cho bạn:`;
+        // If only products, adjust content
+        if (context.products.length > 0 && !response.reply) {
+          botMessage.content = `Tôi tìm thấy ${context.products.length} sản phẩm cho bạn:`;
         }
       }
 
       // Add orders if available
-      if (response.orders && response.orders.length > 0) {
-        botMessage.orders = response.orders;
+      if (context.orders && context.orders.length > 0) {
+        botMessage.orders = context.orders;
         botMessage.messageType = 'order';
         // If only orders, adjust content
-        if (response.orders.length > 0 && !response.response) {
-          botMessage.content = `Bạn có ${response.orders.length} đơn hàng:`;
+        if (context.orders.length > 0 && !response.reply) {
+          botMessage.content = `Bạn có ${context.orders.length} đơn hàng:`;
         }
       }
 
-      // Add suggestions if available
-      if (response.suggestions && response.suggestions.length > 0) {
-        // Store suggestions for quick actions
-        // They will be used in getQuickActions
+      // Add profile if available
+      if (context.profile) {
+        botMessage.profile = context.profile;
       }
 
       const finalMessages = [...updatedMessages, botMessage];
@@ -186,13 +188,78 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
     }
   };
 
-  const handleAddToCart = (product: Product) => {
-    addItem(product, 1);
-    toast.success(
-      'Đã thêm vào giỏ hàng!',
-      `1 ${product.unit} ${product.product_name}`,
-      3000
-    );
+  const handleReset = async () => {
+    try {
+      setIsInitializing(true);
+      setError(null);
+
+      // Clear current session and messages
+      clearChatSession();
+      setMessages([]);
+      setSessionId(null);
+
+      // Create new session
+      const session = await chatbotAPI.createSession(
+        isAuthenticated ? user?.id : undefined
+      );
+      setSessionId(session.session_id);
+      setChatSession(session.session_id);
+
+      // Show welcome message
+      const welcomeMessage: ChatMessage = {
+        id: `welcome-${Date.now()}`,
+        type: 'bot',
+        content: 'Xin chào! Tôi là chatbot của Bach Hoa Xanh. Tôi có thể giúp bạn:\n\n• Tìm kiếm sản phẩm\n• Xem đơn hàng\n• Tư vấn mua sắm\n• Hỗ trợ thanh toán\n\nBạn cần hỗ trợ gì hôm nay?',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([welcomeMessage]);
+      saveChatMessages([welcomeMessage]);
+
+      setIsInitializing(false);
+      toast.success('Đã bắt đầu cuộc trò chuyện mới', '', 2000);
+    } catch (err: any) {
+      console.error('Failed to reset chat:', err);
+      setError('Không thể tạo cuộc trò chuyện mới. Vui lòng thử lại.');
+      setIsInitializing(false);
+    }
+  };
+
+  const handleAddToCart = async (product: ChatbotProduct) => {
+    // Convert ChatbotProduct to Product format for cart
+    // Note: ChatbotProduct may not have all fields, so we need to handle gracefully
+    if (!product.product_id) {
+      toast.error('Không thể thêm sản phẩm này vào giỏ hàng', 'Thiếu thông tin sản phẩm. Vui lòng xem chi tiết sản phẩm để thêm vào giỏ.');
+      return;
+    }
+
+    const productId = parseInt(product.product_id);
+    if (isNaN(productId) || productId <= 0) {
+      toast.error('Không thể thêm sản phẩm này vào giỏ hàng', 'ID sản phẩm không hợp lệ');
+      return;
+    }
+
+    // Use available data to create product for cart
+    // If we have product_id, we can fetch full details, but for now use available data
+    const productForCart: any = {
+      id: productId,
+      product_name: product.product_name,
+      current_price: product.price,
+      unit: product.unit || 'cái',
+      image_url: product.image_url || undefined,
+      product_code: product.product_code || undefined,
+      image_alt: product.product_name,
+    };
+
+    try {
+      addItem(productForCart, 1);
+      toast.success(
+        'Đã thêm vào giỏ hàng!',
+        `1 ${product.unit || 'cái'} ${product.product_name}`,
+        3000
+      );
+    } catch (err) {
+      toast.error('Không thể thêm vào giỏ hàng', 'Vui lòng thử lại sau');
+    }
   };
 
   const getQuickActions = (): Array<{ label: string; action: () => void }> => {
@@ -259,14 +326,26 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
           <Bot className="w-6 h-6" />
           <h3 className="font-extrabold text-lg">Chat với AI</h3>
         </div>
-        {!fullPage && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={onClose}
-            className="p-1 hover:bg-green-800 rounded-lg transition-colors"
+            onClick={handleReset}
+            disabled={isInitializing || isTyping}
+            className="p-1.5 hover:bg-green-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Bắt đầu cuộc trò chuyện mới"
+            aria-label="Reset conversation"
           >
-            <X className="w-5 h-5" />
+            <RotateCcw className="w-5 h-5" />
           </button>
-        )}
+          {!fullPage && (
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-green-800 rounded-lg transition-colors"
+              aria-label="Đóng chatbot"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Messages Area */}
@@ -286,9 +365,9 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
                   <div className="mb-4">
                     <ChatMessageComponent message={message} />
                     <div className="mt-2 space-y-2">
-                      {message.products.map((product) => (
+                      {message.products.map((product, index) => (
                         <ChatProductCard
-                          key={product.id}
+                          key={product.product_id || `product-${index}`}
                           product={product}
                           onAddToCart={handleAddToCart}
                         />
@@ -299,8 +378,8 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
                   <div className="mb-4">
                     <ChatMessageComponent message={message} />
                     <div className="mt-2 space-y-2">
-                      {message.orders.map((order) => (
-                        <ChatOrderCard key={order.id} order={order} />
+                      {message.orders.map((order, index) => (
+                        <ChatOrderCard key={order.order_number || `order-${index}`} order={order} />
                       ))}
                     </div>
                   </div>

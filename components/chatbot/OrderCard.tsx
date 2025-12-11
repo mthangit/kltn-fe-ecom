@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { Package, CheckCircle, Clock, XCircle } from 'lucide-react';
-import { Order } from '@/lib/types';
-import { formatPrice, formatDate } from '@/lib/utils';
+import { ChatbotOrder } from '@/lib/types';
+import { formatPrice } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 
 interface ChatOrderCardProps {
-  order: Order;
+  order: ChatbotOrder;
 }
 
 export function ChatOrderCard({ order }: ChatOrderCardProps) {
@@ -48,38 +48,12 @@ export function ChatOrderCard({ order }: ChatOrderCardProps) {
               <h4 className="font-extrabold text-sm text-gray-900">
                 Đơn hàng #{order.order_number}
               </h4>
-              <p className="text-xs text-gray-600">
-                {formatDate(order.created_at)}
-              </p>
             </div>
           </div>
           <Badge variant={statusColor}>
             {statusLabels[order.status]}
           </Badge>
         </div>
-
-        {order.order_items && order.order_items.length > 0 && (
-          <div className="mb-3 pb-3 border-b border-gray-100">
-            <p className="text-xs text-gray-600 mb-1 font-semibold">Sản phẩm:</p>
-            <div className="space-y-1">
-              {order.order_items.slice(0, 3).map((item) => (
-                <div key={item.id} className="flex justify-between text-xs">
-                  <span className="text-gray-700">
-                    {item.product_name} <span className="text-green-600">x{item.quantity}</span>
-                  </span>
-                  <span className="font-semibold text-gray-900">
-                    {formatPrice(item.total_price)}
-                  </span>
-                </div>
-              ))}
-              {order.order_items.length > 3 && (
-                <p className="text-xs text-gray-500 italic">
-                  +{order.order_items.length - 3} sản phẩm khác
-                </p>
-              )}
-            </div>
-          </div>
-        )}
 
         <div className="flex items-center justify-between">
           <div>
