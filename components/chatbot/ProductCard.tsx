@@ -13,9 +13,13 @@ interface ChatProductCardProps {
 }
 
 export function ChatProductCard({ product, onAddToCart }: ChatProductCardProps) {
-  // Use product_id if available, otherwise can't link to detail page
-  const productId = product.product_id ? parseInt(product.product_id) : null;
-  const productUrl = product.product_url || (productId ? `/products/${productId}` : null);
+  // Use product_id to create link to detail page
+  let productId: number | null = null;
+  if (product.product_id) {
+    const parsed = parseInt(product.product_id);
+    productId = !isNaN(parsed) && parsed > 0 ? parsed : null;
+  }
+  const productUrl = productId ? `/products/${productId}` : null;
   
   // Use price_text if available, otherwise format from price
   const displayPrice = product.price_text || formatPrice(product.price);
