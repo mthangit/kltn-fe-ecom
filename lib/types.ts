@@ -196,7 +196,7 @@ export interface CartItem {
 }
 
 // Payment Types
-export type PaymentMethod = 'momo' | 'vnpay' | 'cod';
+export type PaymentMethod = 'momo' | 'vnpay' | 'zalopay' | 'stripe' | 'cod';
 export type PaymentStatusType = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export interface InitPaymentRequest {

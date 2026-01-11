@@ -37,9 +37,9 @@ apiClient.interceptors.response.use(
         const isPaymentPage = window.location.pathname.includes('/payment/result');
         
         if (!isPaymentPage) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user');
-          window.location.href = '/auth/login';
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        window.location.href = '/auth/login';
         }
       }
     }

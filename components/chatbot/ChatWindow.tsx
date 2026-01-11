@@ -262,29 +262,77 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
     }
   };
 
+  // Initial suggestions - shown after welcome message
+  const getInitialSuggestions = (): Array<{ label: string; action: () => void }> => {
+    const suggestions = [
+      {
+        label: '🥬 Rau củ quả tươi',
+        action: () => handleSend('Tôi muốn mua rau củ quả tươi'),
+      },
+      {
+        label: '🍖 Thịt cá tươi sống',
+        action: () => handleSend('Cho tôi xem các loại thịt cá'),
+      },
+      {
+        label: '🥛 Sữa và đồ uống',
+        action: () => handleSend('Tôi cần mua sữa và đồ uống'),
+      },
+      {
+        label: '🍜 Mì gói, thực phẩm khô',
+        action: () => handleSend('Tìm mì gói và thực phẩm khô'),
+      },
+      {
+        label: '🛒 Sản phẩm khuyến mãi',
+        action: () => handleSend('Có sản phẩm nào đang khuyến mãi không?'),
+      },
+    ];
+
+    if (isAuthenticated) {
+      suggestions.push({
+        label: '📦 Xem đơn hàng của tôi',
+        action: () => handleSend('Tôi muốn xem đơn hàng của tôi'),
+      });
+    }
+
+    return suggestions;
+  };
+
   const getQuickActions = (): Array<{ label: string; action: () => void }> => {
     const actions = [];
     const lastMessage = messages[messages.length - 1];
+    
+    // If only welcome message, show initial suggestions
+    if (messages.length === 1 && lastMessage?.id?.startsWith('welcome')) {
+      return getInitialSuggestions();
+    }
     
     // Context-aware suggestions based on last bot message
     if (lastMessage?.type === 'bot') {
       // If bot showed products
       if (lastMessage.products && lastMessage.products.length > 0) {
         actions.push({
-          label: 'Tìm sản phẩm khác',
+          label: '🔍 Tìm sản phẩm khác',
           action: () => handleSend('Tôi muốn tìm sản phẩm khác'),
         });
         actions.push({
-          label: 'Sản phẩm giá rẻ',
-          action: () => handleSend('Tôi muốn xem sản phẩm giá rẻ'),
+          label: '💰 Sản phẩm giá rẻ',
+          action: () => handleSend('Tôi muốn xem sản phẩm giá rẻ hơn'),
+        });
+        actions.push({
+          label: '🏠 Về trang chủ',
+          action: () => handleSend('Quay lại menu chính'),
         });
       }
       
       // If bot showed orders
       if (lastMessage.orders && lastMessage.orders.length > 0) {
         actions.push({
-          label: 'Theo dõi đơn hàng',
+          label: '📍 Theo dõi đơn hàng',
           action: () => handleSend('Tôi muốn theo dõi đơn hàng'),
+        });
+        actions.push({
+          label: '🛒 Tiếp tục mua sắm',
+          action: () => handleSend('Tôi muốn tiếp tục mua sắm'),
         });
       }
     }
@@ -292,20 +340,25 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
     // Always show common actions if no context-specific ones
     if (actions.length === 0) {
       actions.push({
-        label: 'Xem sản phẩm',
+        label: '🥬 Xem sản phẩm',
         action: () => handleSend('Tôi muốn xem sản phẩm'),
       });
       
       if (isAuthenticated) {
         actions.push({
-          label: 'Đơn hàng của tôi',
+          label: '📦 Đơn hàng của tôi',
           action: () => handleSend('Tôi muốn xem đơn hàng của tôi'),
         });
       }
       
       actions.push({
-        label: 'Hỗ trợ thanh toán',
+        label: '💳 Hỗ trợ thanh toán',
         action: () => handleSend('Tôi cần hỗ trợ về thanh toán'),
+      });
+      
+      actions.push({
+        label: '❓ Hỗ trợ khác',
+        action: () => handleSend('Tôi cần hỗ trợ'),
       });
     }
 
@@ -406,7 +459,10 @@ export function ChatWindow({ isOpen, onClose, fullPage = false }: ChatWindowProp
 
       {/* Quick Actions */}
       {!isInitializing && !isTyping && messages.length > 0 && (
-        <QuickActions actions={getQuickActions()} />
+        <QuickActions 
+          actions={getQuickActions()} 
+          isInitial={messages.length === 1 && messages[0]?.id?.startsWith('welcome')}
+        />
       )}
 
       {/* Input */}

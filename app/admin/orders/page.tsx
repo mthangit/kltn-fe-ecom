@@ -134,7 +134,7 @@ export default function AdminOrdersPage() {
         {/* Orders Table */}
         <Card>
           <CardHeader>
-            <h2 className="text-xl font-bold">
+            <h2 className="text-xl font-extrabold text-gray-900">
               Danh sách đơn hàng ({total})
             </h2>
           </CardHeader>
@@ -147,25 +147,25 @@ export default function AdminOrdersPage() {
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Mã đơn</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Khách hàng</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Email</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Tổng tiền</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Trạng thái</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Thanh toán</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Ngày đặt</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold">Thao tác</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Mã đơn</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Khách hàng</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Email</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Tổng tiền</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Trạng thái</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Thanh toán</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Ngày đặt</th>
+                        <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
                       {orders.map((order) => (
                         <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm font-medium">{order.order_number}</td>
-                          <td className="px-4 py-3 text-sm">{order.username || 'N/A'}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{order.user_email || 'N/A'}</td>
-                          <td className="px-4 py-3 text-sm font-medium text-green-600">
+                          <td className="px-4 py-3 text-sm font-bold text-gray-900">{order.order_number}</td>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.username || 'N/A'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{order.user_email || 'N/A'}</td>
+                          <td className="px-4 py-3 text-sm font-bold text-green-600">
                             {formatPrice(order.total_amount)}
                           </td>
                           <td className="px-4 py-3 text-sm">
@@ -178,7 +178,7 @@ export default function AdminOrdersPage() {
                               {paymentStatusOptions.find((s) => s.value === order.payment_status)?.label}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
                             {formatDate(order.created_at).split(',')[0]}
                           </td>
                           <td className="px-4 py-3 text-sm">
@@ -205,7 +205,7 @@ export default function AdminOrdersPage() {
                   >
                     Trang trước
                   </Button>
-                  <span className="px-4 py-2 text-gray-700">
+                  <span className="px-4 py-2 text-gray-900 font-medium">
                     Trang {page} / {Math.ceil(total / 20)}
                   </span>
                   <Button
@@ -236,9 +236,9 @@ export default function AdminOrdersPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Trạng thái đơn hàng</label>
+                <label className="block text-sm font-bold text-gray-900 mb-1">Trạng thái đơn hàng</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 border rounded-lg text-gray-900 font-medium"
                   defaultValue={selectedOrder.status}
                   onChange={(e) =>
                     handleUpdateOrder(selectedOrder.id, { status: e.target.value as any })
@@ -253,9 +253,9 @@ export default function AdminOrdersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Trạng thái thanh toán</label>
+                <label className="block text-sm font-bold text-gray-900 mb-1">Trạng thái thanh toán</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 border rounded-lg text-gray-900 font-medium"
                   defaultValue={selectedOrder.payment_status}
                   onChange={(e) =>
                     handleUpdateOrder(selectedOrder.id, { payment_status: e.target.value as any })
@@ -271,23 +271,23 @@ export default function AdminOrdersPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-2">Thông tin khách hàng</h4>
-              <p className="text-sm text-gray-700">Tên: {selectedOrder.username || 'N/A'}</p>
-              <p className="text-sm text-gray-700">Email: {selectedOrder.user_email || 'N/A'}</p>
-              <p className="text-sm text-gray-700">Địa chỉ giao hàng: {selectedOrder.shipping_address}</p>
+              <h4 className="font-bold text-gray-900 mb-2">Thông tin khách hàng</h4>
+              <p className="text-sm text-gray-900">Tên: <span className="font-medium">{selectedOrder.username || 'N/A'}</span></p>
+              <p className="text-sm text-gray-900">Email: <span className="font-medium">{selectedOrder.user_email || 'N/A'}</span></p>
+              <p className="text-sm text-gray-900">Địa chỉ giao hàng: <span className="font-medium">{selectedOrder.shipping_address}</span></p>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-2">Sản phẩm</h4>
+              <h4 className="font-bold text-gray-900 mb-2">Sản phẩm</h4>
               <div className="space-y-2">
-                {selectedOrder.items.map((item) => (
+                {selectedOrder.order_items?.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm p-2 bg-gray-50 rounded">
-                    <span>
+                    <span className="text-gray-900 font-medium">
                       {item.product_name} x {item.quantity}
                     </span>
-                    <span className="font-medium">{formatPrice(item.total_price)}</span>
+                    <span className="font-bold text-gray-900">{formatPrice(item.total_price)}</span>
                   </div>
-                ))}
+                )) || <p className="text-sm text-gray-700">Không có sản phẩm</p>}
               </div>
             </div>
 
@@ -300,14 +300,14 @@ export default function AdminOrdersPage() {
 
             {selectedOrder.notes && (
               <div className="bg-blue-50 p-3 rounded">
-                <p className="text-sm font-medium mb-1">Ghi chú:</p>
-                <p className="text-sm text-gray-700">{selectedOrder.notes}</p>
+                <p className="text-sm font-bold text-gray-900 mb-1">Ghi chú:</p>
+                <p className="text-sm text-gray-900">{selectedOrder.notes}</p>
               </div>
             )}
 
-            <div className="text-xs text-gray-500">
-              <p>Ngày đặt: {formatDate(selectedOrder.created_at)}</p>
-              <p>Cập nhật: {formatDate(selectedOrder.updated_at)}</p>
+            <div className="text-sm text-gray-900">
+              <p>Ngày đặt: <span className="font-medium">{formatDate(selectedOrder.created_at)}</span></p>
+              <p>Cập nhật: <span className="font-medium">{formatDate(selectedOrder.updated_at)}</span></p>
             </div>
           </div>
         </Modal>

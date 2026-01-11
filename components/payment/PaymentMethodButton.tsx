@@ -35,6 +35,20 @@ export function PaymentMethodButton({
       description: 'Cổng thanh toán VNPay',
       type: 'image' as const,
     },
+    zalopay: {
+      name: 'Zalopay',
+      logo: '/zalopay_logo.png',
+      color: 'bg-blue-50',
+      description: 'Ví điện tử Zalopay',
+      type: 'image' as const,
+    },
+    stripe: {
+      name: 'Stripe',
+      logo: '/stripe_logo.png',
+      color: 'bg-indigo-50',
+      description: 'Thanh toán quốc tế Stripe',
+      type: 'image' as const,
+    },
     cod: {
       name: 'COD',
       icon: Banknote,

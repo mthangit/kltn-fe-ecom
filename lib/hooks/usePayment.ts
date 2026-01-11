@@ -25,6 +25,8 @@ export function usePayment(options?: UsePaymentOptions) {
     setLoading(true);
     setError(null);
 
+    let isRedirecting = false;
+
     try {
       const returnUrl = `${window.location.origin}/payment/result`;
       const cancelUrl = `${window.location.origin}/payment/cancel`;
@@ -51,10 +53,16 @@ export function usePayment(options?: UsePaymentOptions) {
         return;
       }
 
-      // Handle MoMo/VNPay - redirect to payment gateway
+      // Handle online payment - redirect to payment gateway
       if (result.payment_url) {
+        isRedirecting = true;
+        options?.onSuccess?.(result);
+
         // Check if mobile and has deep link (for MoMo app)
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        // Small delay to let React finish rendering before redirect
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         if (isMobile && method === 'momo' && result.deep_link) {
           // Try to open MoMo app first
@@ -69,8 +77,6 @@ export function usePayment(options?: UsePaymentOptions) {
           // Redirect to payment gateway
           window.location.href = result.payment_url;
         }
-
-        options?.onSuccess?.(result);
       } else {
         throw new Error('Payment URL not provided');
       }
@@ -78,8 +84,12 @@ export function usePayment(options?: UsePaymentOptions) {
       const errorMessage = getErrorMessage(err);
       setError(errorMessage);
       options?.onError?.(errorMessage);
-    } finally {
       setLoading(false);
+    } finally {
+      // Don't set loading to false if redirecting - component will unmount
+      if (!isRedirecting) {
+        setLoading(false);
+      }
     }
   };
 

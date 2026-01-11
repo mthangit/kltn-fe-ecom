@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { ToastContainer } from "@/components/ui/Toast";
-import { ChatContainer } from "@/components/chatbot";
+import { Inter, Fira_Code } from "next/font/google";
+import { ClientProviders } from "@/components/providers/ClientProviders";
 import "./globals.css";
 
-const geistSans = Geist({
+const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const firaCode = Fira_Code({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -27,11 +26,11 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${firaCode.variable} antialiased`}
       >
-        {children}
-        <ToastContainer />
-        <ChatContainer />
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );

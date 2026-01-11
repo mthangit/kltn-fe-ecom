@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -40,10 +41,16 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, clearCart, getTotalPrice } = useCartStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('cod');
   const { processPayment, loading: paymentLoading } = usePayment({
-    onError: (errorMsg) => setError(errorMsg),
+    onError: (errorMsg) => {
+      setError(errorMsg);
+      setIsRedirecting(false);
+      setIsProcessingPayment(false);
+    },
   });
 
   const {
@@ -57,6 +64,7 @@ export default function CheckoutPage() {
   const onSubmit = async (data: CheckoutFormData) => {
     try {
       setIsLoading(true);
+      setIsProcessingPayment(true);
       setError(null);
 
       // Create order first
@@ -74,25 +82,34 @@ export default function CheckoutPage() {
 
       const order = await ordersAPI.createOrder(orderData);
       
-      // Clear cart after order is created
+      // For online payment methods, show redirecting overlay
+      if (selectedPaymentMethod !== 'cod') {
+        setIsRedirecting(true);
+      }
+
+      // Clear cart after order is created (after setting isProcessingPayment to prevent redirect)
       clearCart();
 
       // Process payment based on selected method
       await processPayment(order.id, selectedPaymentMethod);
 
-      // For COD, show success message
+      // For COD, show success message and redirect
       if (selectedPaymentMethod === 'cod') {
-        alert('Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.');
+        router.push('/orders');
       }
-      // For MoMo/VNPay, user will be redirected to payment gateway
+      // For online payments, user will be redirected to payment gateway
     } catch (err: any) {
       setError(getErrorMessage(err));
+      setIsRedirecting(false);
+      setIsProcessingPayment(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (items.length === 0) {
+  // Only redirect to cart if not processing payment
+  // (cart is cleared during payment processing, so we need to check isProcessingPayment)
+  if (items.length === 0 && !isProcessingPayment && !isRedirecting) {
     router.push('/cart');
     return null;
   }
@@ -101,6 +118,31 @@ export default function CheckoutPage() {
 
   return (
     <MainLayout>
+      {/* Full screen loading overlay when redirecting to payment gateway */}
+      {isRedirecting && (
+        <div className="fixed inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center p-8 max-w-md">
+            <div className="relative mb-6">
+              <div className="w-20 h-20 mx-auto border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+            </div>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-3">
+              Đang chuyển đến cổng thanh toán...
+            </h2>
+            <p className="text-gray-600 font-medium mb-4">
+              Vui lòng không đóng trình duyệt. Bạn sẽ được chuyển đến{' '}
+              <span className="font-bold text-green-600 uppercase">
+                {selectedPaymentMethod}
+              </span>{' '}
+              trong giây lát.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Đang xử lý...</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-extrabold mb-8 text-gray-900">Thanh Toán</h1>
 
@@ -183,9 +225,9 @@ export default function CheckoutPage() {
                   disabled={loading}
                 />
                 <PaymentMethodButton
-                  method="vnpay"
+                  method="stripe"
                   onSelect={setSelectedPaymentMethod}
-                  selected={selectedPaymentMethod === 'vnpay'}
+                  selected={selectedPaymentMethod === 'stripe'}
                   disabled={loading}
                 />
                 <PaymentMethodButton

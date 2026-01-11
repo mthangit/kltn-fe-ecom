@@ -1,11 +1,23 @@
 'use client';
 
 import { MessageCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChatWindow } from './ChatWindow';
 
 export function FloatingChatButton() {
-  const [isOpen, setIsOpen] = useState(false);
+  // Auto-open chatbot when component mounts
+  const [isOpen, setIsOpen] = useState(true);
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
+
+  // Only auto-open once per session
+  useEffect(() => {
+    const hasOpened = sessionStorage.getItem('chatbot_auto_opened');
+    if (!hasOpened) {
+      setIsOpen(true);
+      sessionStorage.setItem('chatbot_auto_opened', 'true');
+    }
+    setHasAutoOpened(true);
+  }, []);
 
   return (
     <>

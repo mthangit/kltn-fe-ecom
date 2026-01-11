@@ -182,10 +182,10 @@ export default function PaymentHistoryPage() {
                               <PaymentStatusBadge status={payment.status} />
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
+                          <td className="py-3 px-4 text-sm text-gray-900 font-medium">
                             {payment.transaction_id || '-'}
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
+                          <td className="py-3 px-4 text-sm text-gray-900 font-medium">
                             {format(new Date(payment.created_at), 'dd/MM/yyyy HH:mm', {
                               locale: vi,
                             })}
@@ -205,25 +205,25 @@ export default function PaymentHistoryPage() {
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-semibold text-sm text-gray-600">Mã đơn hàng</p>
-                          <p className="font-medium">{payment.order_number}</p>
+                          <p className="font-semibold text-sm text-gray-900">Mã đơn hàng</p>
+                          <p className="font-medium text-gray-900">{payment.order_number}</p>
                         </div>
                         <PaymentStatusBadge status={payment.status} />
                       </div>
 
                       <div className="flex justify-between">
                         <div>
-                          <p className="font-semibold text-sm text-gray-600">Phương thức</p>
+                          <p className="font-semibold text-sm text-gray-900">Phương thức</p>
                           <div className="flex items-center gap-2 mt-1">
                             {getPaymentMethodIcon(payment.payment_method)}
-                            <span className="uppercase text-sm font-medium">
+                            <span className="uppercase text-sm font-medium text-gray-900">
                               {payment.payment_method}
                             </span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-sm text-gray-600">Số tiền</p>
-                          <p className="font-medium text-green-600">
+                          <p className="font-semibold text-sm text-gray-900">Số tiền</p>
+                          <p className="font-bold text-green-600">
                             {formatPrice(payment.amount)}
                           </p>
                         </div>
@@ -231,12 +231,12 @@ export default function PaymentHistoryPage() {
 
                       <div className="flex justify-between text-sm">
                         <div>
-                          <p className="text-gray-600">Mã GD</p>
-                          <p className="font-medium">{payment.transaction_id || '-'}</p>
+                          <p className="text-gray-900 font-semibold">Mã GD</p>
+                          <p className="font-medium text-gray-900">{payment.transaction_id || '-'}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-gray-600">Ngày tạo</p>
-                          <p className="font-medium">
+                          <p className="text-gray-900 font-semibold">Ngày tạo</p>
+                          <p className="font-medium text-gray-900">
                             {format(new Date(payment.created_at), 'dd/MM/yyyy HH:mm', {
                               locale: vi,
                             })}
